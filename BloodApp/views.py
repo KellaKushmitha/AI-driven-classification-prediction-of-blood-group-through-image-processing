@@ -32,18 +32,12 @@ from keras.optimizers import Adam
 
 global username
 global X_train, X_test, y_train, y_test, X, Y, labels
-labels = []
+labels = ['A', 'AB', 'B', 'O']
+
 accuracy = []
 precision = []
 recall = [] 
 fscore = []
-path = "Dataset"
-
-for root, dirs, directory in os.walk(path):
-    for j in range(len(directory)):
-        name = os.path.basename(root)
-        if name not in labels:
-            labels.append(name.strip())
 
 def getLabel(name):
     index = -1
@@ -192,7 +186,7 @@ def is_blood_sample_image(image_path):
 
     # A blood sample image should have at least 5% red pixels
     # and not more than 80% (to exclude fully red/saturated images)
-    if red_ratio < 0.05 or red_ratio > 0.80:
+    if red_ratio < 0.005 or red_ratio > 0.98:
         return False
 
     # Also check that the background is mostly light/white
@@ -202,9 +196,10 @@ def is_blood_sample_image(image_path):
     bright_ratio = bright_pixels / total_pixels
 
     # Blood sample images typically have a significant white/light background (>= 20%)
-    if bright_ratio < 0.20:
+    if bright_ratio < 0.01:
         return False
-
+    # Detect too many edges (common in screenshots/UI images)
+    
     return True
 
 def PredictAction(request):
@@ -234,9 +229,14 @@ def PredictAction(request):
         img = np.asarray(im2arr)
         img = img.astype('float32')
         img = img/255
-        predict = dnn_model.predict(img)
-        predict = np.argmax(predict)
-        predict = labels[predict]
+        prediction = dnn_model.predict(img)
+
+        
+
+        
+
+        predict_index = np.argmax(prediction)
+        predict = labels[predict_index]
         original_image, segmented_mask = segment('BloodApp/static/test.jpg')
         original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
         cv2.putText(original_image, 'Predicted As : '+predict, (10, 25),  cv2.FONT_HERSHEY_SIMPLEX,0.9, (0, 0, 255), 2)
@@ -304,7 +304,7 @@ def RegisterAction(request):
         address = request.POST.get('t5', False)
         
         output = "none"
-        con = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'blood',charset='utf8')
+        con = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'Chinnu@13012006', database = 'blood',charset='utf8')
         with con:
             cur = con.cursor()
             cur.execute("select username FROM register")
@@ -314,7 +314,7 @@ def RegisterAction(request):
                     output = username+" Username already exists"
                     break                
         if output == "none":
-            db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'blood',charset='utf8')
+            db_connection = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'Chinnu@13012006', database = 'blood',charset='utf8')
             db_cursor = db_connection.cursor()
             student_sql_query = "INSERT INTO register(username,password,contact,email,address) VALUES('"+username+"','"+password+"','"+contact+"','"+email+"','"+address+"')"
             db_cursor.execute(student_sql_query)
@@ -332,7 +332,7 @@ def UserLoginAction(request):
         status = "none"
         users = request.POST.get('t1', False)
         password = request.POST.get('t2', False)
-        con = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'root', database = 'blood',charset='utf8')
+        con = pymysql.connect(host='127.0.0.1',port = 3306,user = 'root', password = 'Chinnu@13012006', database = 'blood',charset='utf8')
         with con:
             cur = con.cursor()
             cur.execute("select username,password FROM register")
