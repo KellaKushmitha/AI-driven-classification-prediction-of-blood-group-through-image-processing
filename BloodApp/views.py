@@ -230,11 +230,6 @@ def PredictAction(request):
         img = img.astype('float32')
         img = img/255
         prediction = dnn_model.predict(img)
-
-        
-
-        
-
         predict_index = np.argmax(prediction)
         predict = labels[predict_index]
         original_image, segmented_mask = segment('BloodApp/static/test.jpg')
